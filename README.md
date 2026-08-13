@@ -1,6 +1,6 @@
 # 機械エラーコード管理
 
-機械のエラーコードをブラウザ内の IndexedDB で管理し、Google Drive の `MachineErrorCodeDB-latest.json` と明示的に同期する Web アプリです。エラーコードは数値変換せず文字列で保持するため、`0012` や `AL-E01` もそのまま保存できます。
+機械のエラーコードをブラウザ内の IndexedDB で管理し、Google Drive の `WebAppsData/MachineErrorCodeDB/data.json` と明示的に同期する Web アプリです。エラーコードは数値変換せず文字列で保持するため、`0012` や `AL-E01` もそのまま保存できます。
 
 ## 主な機能
 
@@ -34,7 +34,7 @@ npm run dev
 5. 「承認済みの JavaScript 生成元」に `http://localhost:5173` と本番 URL（例: `https://your-app.vercel.app`）を追加します。このトークン方式ではリダイレクト URI は不要です。
 6. 発行された**クライアント ID**を `VITE_GOOGLE_CLIENT_ID` に設定します。OAuth クライアントシークレットや API キーはフロントエンドに置かないでください。
 
-要求するスコープは `drive.file` です。初回の「クラウドへ保存」でマイドライブ直下に `MachineErrorCodeDB-latest.json` を作成します。
+要求するスコープは `drive` です。初回の「クラウドへ保存」で `WebAppsData/MachineErrorCodeDB` フォルダが存在しなければ作成し、その中の `data.json` に保存します。同名ファイルが存在する場合は上書きします。
 
 ## 同期の仕様
 
