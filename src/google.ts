@@ -1,7 +1,10 @@
 import { normalizeRecord, type ErrorCode, type SyncMeta } from './types';
 
-const FILE = 'MachineErrorCodeDB-latest.json';
-const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const ROOT_FOLDER = 'WebAppsData';
+const APP_FOLDER = 'MachineErrorCodeDB';
+const FILE = 'data.json';
+const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
+const SCOPE = 'https://www.googleapis.com/auth/drive';
 const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client';
 
 type TokenResponse = {
@@ -123,10 +126,40 @@ async function api(url: string, init?: RequestInit) {
   return response;
 }
 
-export async function findFile() {
-  const q = encodeURIComponent(`name='${FILE}' and trashed=false`);
+type DriveFile = { id: string; modifiedTime?: string };
+
+async function findChild(name: string, parentId: string, mimeType?: string) {
+  const mimeQuery = mimeType ? ` and mimeType='${mimeType}'` : ` and mimeType!='${FOLDER_MIME_TYPE}'`;
+  const q = encodeURIComponent(`name='${name}' and '${parentId}' in parents and trashed=false${mimeQuery}`);
   const response = await api(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,modifiedTime)&spaces=drive`);
-  return ((await response.json()).files as { id: string; modifiedTime: string }[])[0];
+  return ((await response.json()).files as DriveFile[])[0];
+}
+
+async function createFolder(name: string, parentId: string) {
+  const response = await api('https://www.googleapis.com/drive/v3/files?fields=id', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, mimeType: FOLDER_MIME_TYPE, parents: [parentId] }),
+  });
+  return await response.json() as DriveFile;
+}
+
+async function findFolder(name: string, parentId: string, create: boolean) {
+  const folder = await findChild(name, parentId, FOLDER_MIME_TYPE);
+  if (folder || !create) return folder;
+  return createFolder(name, parentId);
+}
+
+async function findAppFolder(create: boolean) {
+  const rootFolder = await findFolder(ROOT_FOLDER, 'root', create);
+  if (!rootFolder) return undefined;
+  return findFolder(APP_FOLDER, rootFolder.id, create);
+}
+
+export async function findFile() {
+  const folder = await findAppFolder(false);
+  if (!folder) return undefined;
+  return findChild(FILE, folder.id);
 }
 
 export async function download() {
@@ -146,8 +179,10 @@ export async function upload(records: ErrorCode[], meta: SyncMeta) {
   if (current) {
     response = await api(`https://www.googleapis.com/upload/drive/v3/files/${current.id}?uploadType=media&fields=id,modifiedTime`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body });
   } else {
+    const folder = await findAppFolder(true);
+    if (!folder) throw new Error('Google Driveの保存先フォルダを作成できませんでした。');
     const boundary = 'machine-error-boundary';
-    const multipart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: FILE, mimeType: 'application/json' })}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${boundary}--`;
+    const multipart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: FILE, mimeType: 'application/json', parents: [folder.id] })}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${boundary}--`;
     response = await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,modifiedTime', { method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body: multipart });
   }
   const file = await response.json();
