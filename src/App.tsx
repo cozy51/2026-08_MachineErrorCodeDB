@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CloudDownload, CloudUpload, Database, Download, FileSpreadsheet, FileUp, HelpCircle, LogIn, LogOut, Pencil, Plus, RefreshCw, Search, Trash2, Upload, X } from 'lucide-react';
-import * as XLSX from 'xlsx'; import BrandMark from './BrandMark'; import { deleteRecord, getMeta, getRecords, putRecord, replaceRecords, setMeta } from './db'; import { download, login, logout, upload } from './google'; import { emptyRecord, MACHINE_MODELS, type DataScope, type ErrorCode, type MachineModel, type MachineSeries, type SyncMeta } from './types';
+import * as XLSX from 'xlsx'; import BrandMark from './BrandMark'; import { deleteRecord, getMeta, getRecords, putRecord, replaceRecords, setMeta } from './db'; import { download, login, logout, prepareGoogleLogin, upload } from './google'; import { emptyRecord, MACHINE_MODELS, type DataScope, type ErrorCode, type MachineModel, type MachineSeries, type SyncMeta } from './types';
 const fields:[keyof ErrorCode,string][]=[['code','エラーコード'],['name','名称'],['category','分類'],['type','タイプ'],['level','レベル'],['className','クラス'],['description','異常内容'],['investigation','調査内容'],['recovery','復旧方法'],['retry','Retry']];
 const headers:Record<string,keyof ErrorCode>={'エラーコード':'code','名称':'name','分類':'category','タイプ':'type','レベル':'level','クラス':'className','異常内容':'description','調査内容':'investigation','復旧方法':'recovery','Retry':'retry'};
 const fmt=(v?:string)=>v?new Intl.DateTimeFormat('ja-JP',{dateStyle:'short',timeStyle:'short'}).format(new Date(v)):'未同期';
 export default function App(){
  const [records,setRecords]=useState<ErrorCode[]>([]),[meta,setSync]=useState<SyncMeta>({}),[online,setOnline]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const [series,setSeries]=useState<MachineSeries>('SRC350'),[model,setModel]=useState<MachineModel>('SRC350-M2'),[search,setSearch]=useState(''),[filters,setFilters]=useState({code:'',category:'',type:'',level:'',className:''}),[editing,setEditing]=useState<ErrorCode|null>(null),[importOpen,setImportOpen]=useState(false),[importScope,setImportScope]=useState<DataScope>('series'),[dragging,setDragging]=useState(false); const input=useRef<HTMLInputElement>(null);
- useEffect(()=>{Promise.all([getRecords(),getMeta()]).then(([r,m])=>{setRecords(r);setSync(m)})},[]);
+ useEffect(()=>{Promise.all([getRecords(),getMeta()]).then(([r,m])=>{setRecords(r);setSync(m)});prepareGoogleLogin().catch(()=>{/* ログイン操作時にユーザー向けのエラーを表示する */})},[]);
  const machineRecords=useMemo(()=>records.filter(r=>r.series===series&&(r.scope==='series'||r.model===model)),[records,series,model]);
  const options=(key:keyof typeof filters)=>[...new Set(machineRecords.map(r=>r[key]).filter(Boolean))].sort();
  const shown=useMemo(()=>machineRecords.filter(r=>{const q=search.toLowerCase();return (!q||fields.some(([k])=>String(r[k]).toLowerCase().includes(q)))&&Object.entries(filters).every(([k,v])=>!v||r[k as keyof ErrorCode]===v)}),[machineRecords,search,filters]);
