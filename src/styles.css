@@ -23,7 +23,7 @@ header{height:84px;background:#fff;border-bottom:1px solid #d5e0e8;display:flex;
 .help{color:#7890a5;width:19px}
 main{width:100%;padding:16px 20px 48px}
 .controls,.table-card{background:#fff;border:1px solid #d5e0e8;border-radius:10px;box-shadow:0 2px 7px #17324a0b}
-.filter-row{padding:20px 22px 17px;display:grid;grid-template-columns:150px 170px minmax(300px,1fr) repeat(4,140px);gap:16px}
+.filter-row{padding:20px 22px 17px;display:grid;grid-template-columns:150px 170px 150px minmax(300px,1fr) repeat(4,140px);gap:16px}
 .filter-row label>span{display:block;font-size:12px;font-weight:700;margin-bottom:7px}
 .filter-row select,.search>div{height:42px;width:100%;border:1px solid #cbd8e2;border-radius:6px;background:#fff}
 .filter-row select{padding:0 12px}
@@ -82,7 +82,7 @@ tbody tr:hover{background:#f5fafb}
 .busy svg{width:17px;vertical-align:middle;margin-right:7px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}
 }
-@media(max-width:1250px){.filter-row{grid-template-columns:140px 160px minmax(260px,1fr) repeat(4,120px)}
+@media(max-width:1250px){.filter-row{grid-template-columns:140px 160px 140px minmax(260px,1fr) repeat(4,120px)}
 .buttons button{padding:0 8px}
 .buttons button svg{display:none}
 }
