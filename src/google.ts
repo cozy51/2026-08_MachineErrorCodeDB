@@ -1,6 +1,6 @@
 import { normalizeRecord, type ErrorCode, type SyncMeta } from './types';
 
-const ROOT_FOLDER = 'WebAppsData';
+const ROOT_FOLDER_ID = '1SWmOnYn98EN5nZs7Jsi3vBLkuJa4B_O6';
 const APP_FOLDER = 'MachineErrorCodeDB';
 const FILE = 'data.json';
 const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
@@ -151,9 +151,7 @@ async function findFolder(name: string, parentId: string, create: boolean) {
 }
 
 async function findAppFolder(create: boolean) {
-  const rootFolder = await findFolder(ROOT_FOLDER, 'root', create);
-  if (!rootFolder) return undefined;
-  return findFolder(APP_FOLDER, rootFolder.id, create);
+  return findFolder(APP_FOLDER, ROOT_FOLDER_ID, create);
 }
 
 export async function findFile() {

@@ -34,7 +34,7 @@ npm run dev
 5. 「承認済みの JavaScript 生成元」に `http://localhost:5173` と本番 URL（例: `https://your-app.vercel.app`）を追加します。このトークン方式ではリダイレクト URI は不要です。
 6. 発行された**クライアント ID**を `VITE_GOOGLE_CLIENT_ID` に設定します。OAuth クライアントシークレットや API キーはフロントエンドに置かないでください。
 
-要求するスコープは `drive` です。初回の「クラウドへ保存」で `WebAppsData/MachineErrorCodeDB` フォルダが存在しなければ作成し、その中の `data.json` に保存します。同名ファイルが存在する場合は上書きします。
+要求するスコープは `drive` です。保存先の `WebAppsData` フォルダは名前ではなくフォルダ ID (`1SWmOnYn98EN5nZs7Jsi3vBLkuJa4B_O6`) で特定します。初回の「クラウドへ保存」でその配下に `MachineErrorCodeDB` フォルダが存在しなければ作成し、その中の `data.json` に保存します。同名ファイルが存在する場合は上書きします。ログインするアカウントがこのフォルダへアクセスできる必要があります。
 
 ## 同期の仕様
 
